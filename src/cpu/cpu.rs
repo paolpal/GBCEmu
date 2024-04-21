@@ -34,13 +34,13 @@ impl fmt::Display for Registers {
     }
 }
 
-pub struct CPU {
+pub struct Processor {
     pub regs : Registers,
 }
 
-impl CPU {
-    pub fn new() -> CPU {
-        CPU {
+impl Processor {
+    pub fn new() -> Processor {
+        Processor {
             regs: Registers {
                 a: 0,
                 f: 0,

@@ -27,6 +27,9 @@ Il progetto sfrutta le seguenti tecnologie principali:
 - **Rust**: Linguaggio di programmazione principale per lo sviluppo del progetto.
 - **SDL2**: Libreria per la grafica, l'audio e la gestione degli input.
 
+## Riferimento agli Opcode
+Per ulteriori informazioni sugli opcode della CPU del Game Boy, consulta [questo sito](https://izik1.github.io/gbops/).
+
 ## Stato del Progetto
 Il progetto è ancora nelle fasi iniziali di sviluppo. Attualmente sono implementate solo parzialmente la gestione della memoria e la CPU del GBC. Molte altre caratteristiche chiave devono ancora essere sviluppate e ottimizzate per raggiungere gli obiettivi desiderati.
 
