@@ -2248,10 +2248,10 @@ impl Processor {
                     0xFF => {
                         self.regs.a = self.regs.a & 0x7F;
                         8
-                    }, // RES 7,A
-
+                    } // RES 7,A
                     
                 }
+            }
             0xCC => { 
                 let addr = self.next_word(memory);
                 if self.regs.f & 0x80 == 0x80 {
@@ -2533,5 +2533,5 @@ impl Processor {
             }, // RST 38H
             _ => panic!("Unknown Opcode: ${:02X} @ ${:04X}", opcode, self.regs.pc)
         }
-    } 
+    }
 }
