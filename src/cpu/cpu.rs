@@ -14,6 +14,14 @@ pub struct Registers {
 	pub pc: u16,
 }
 
+pub struct Flags {
+    pub z: bool,
+    pub n: bool,
+    pub h: bool,
+    pub c: bool,
+    pub ime: bool,
+}
+
 impl fmt::Display for Registers {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
@@ -36,6 +44,7 @@ impl fmt::Display for Registers {
 
 pub struct Processor {
     pub regs : Registers,
+    pub fs : Flags,
 }
 
 impl Processor {
@@ -52,8 +61,30 @@ impl Processor {
                 l: 0,
                 sp: 0,
                 pc: 0,
+            }, 
+            fs: Flags {
+                z: false,
+                n: false,
+                h: false,
+                c: false,
+                ime: false,
             }
         }
+    }
+
+    fn push(&mut self, memory: &mut WRam, value: u16) {
+        self.regs.sp -= 1;
+        memory.write(self.regs.sp, (value >> 8) as u8);
+        self.regs.sp -= 1;
+        memory.write(self.regs.sp, value as u8);
+    }
+
+    fn pop(&mut self, memory: &mut WRam) -> u16 {
+        let low = memory.read(self.regs.sp);
+        self.regs.sp += 1;
+        let high = memory.read(self.regs.sp);
+        self.regs.sp += 1;
+        (high as u16) << 8 | low as u16
     }
 
     pub fn print_state(&self) {
@@ -64,6 +95,25 @@ impl Processor {
         let byte = memory.read(self.regs.pc);
         self.regs.pc = self.regs.pc.wrapping_add(1);
         byte
+    }
+
+    fn next_word(&mut self, memory: &WRam) -> u16 {
+        let word = (self.next_byte(memory) as u16) << 8 | self.next_byte(memory) as u16;
+        word
+    }
+
+    fn bit(&mut self, reg: u8, bit: u8) {
+        self.fs.z = (reg & (1 << bit)) == 0;
+        self.fs.n = false;
+        self.fs.h = true;
+    }
+
+    fn set(&mut self, reg: &mut u8, bit: u8) {
+        *reg |= 1 << bit;
+    }
+
+    fn res(&mut self, reg: &mut u8, bit: u8) {
+        *reg &= !(1 << bit);
     }
 
     pub fn step(&mut self, memory: &mut WRam) -> usize {
@@ -1391,11 +1441,13 @@ impl Processor {
                         16
                     }, // SRL (HL)
                     0x3F => { 
-                        let result = self.regs.a.rotate_right_through_carry(1, self.regs.f & 0x10 == 0x10);
+                        //let result = self.regs.a.rotate_right_through_carry(1, self.regs.f & 0x10 == 0x10);
                         self.regs.f = self.regs.f & 0x80 | 0x40;
                         if result == 0 {
                             self.regs.f |= 0x80;
                         }
+
+                        self.regs.a<<1;
                         8
                     }, // SRL A
                     0x40 => { 
@@ -2010,13 +2062,13 @@ impl Processor {
                         8
                     }, // RES 0,H
                     0xC4 => {
-                        self.regs.b = self.regs.b & 0xEF;
+                        self.regs.h = self.regs.b | 0x01;
                         8
-                    }, // RES 0,L
+                    }, // SET 0,H
                     0xC5 => {
-                        memory.write(addr, memory.read(addr) & 0xFD);
-                        16
-                    }, // RES 0,(HL)
+                        self.regs.l = self.regs.l | 0x01;
+                        8
+                    }, // SET 0,L
                     0xC6 => {
                         self.regs.b = self.regs.b & 0xBF;
                         8
@@ -2423,7 +2475,7 @@ impl Processor {
                 16
             }, // RST 20H
             0xE8 => { 
-                let value = self.next_byte(memory) as i8 as i16;
+                let value = self.next_byte(memory) as u8 as u16;
                 let result = self.regs.sp.wrapping_add(value);
                 self.regs.f = 0;
                 if (self.regs.sp & 0x0F) + (value & 0x0F) > 0x0F {
@@ -2470,7 +2522,7 @@ impl Processor {
                 8
             }, // LD A,(C)
             0xF3 => { 
-                self.ime = false;
+                self.fs.ime = false;
                 4
             }, // DI
             0xF5 => { 
@@ -2489,7 +2541,7 @@ impl Processor {
                 16
             }, // RST 30H
             0xF8 => { 
-                let value = self.next_byte(memory) as i8 as i16;
+                let value = self.next_byte(memory) as u8 as u16;
                 let result = self.regs.sp.wrapping_add(value);
                 self.regs.f = 0;
                 if (self.regs.sp & 0x0F) + (value & 0x0F) > 0x0F {
@@ -2511,7 +2563,7 @@ impl Processor {
                 16
             }, // LD A,(u16)
             0xFB => { 
-                self.ime = true;
+                self.fs.ime = true;
                 4
             }, // EI
             0xFE => { 

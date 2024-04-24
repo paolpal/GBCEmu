@@ -28,7 +28,9 @@ Il progetto sfrutta le seguenti tecnologie principali:
 - **SDL2**: Libreria per la grafica, l'audio e la gestione degli input.
 
 ## Riferimento agli Opcode
-Per ulteriori informazioni sugli opcode della CPU del Game Boy, consulta [questo sito](https://izik1.github.io/gbops/).
+Per ulteriori informazioni sugli opcode della CPU del Game Boy, consulta i seguenti siti:
+- [Tabella degli Opcode](https://izik1.github.io/gbops/).
+- [Dettagli delle Istruzioni](http://z80-heaven.wikidot.com/instructions-set)
 
 ## Stato del Progetto
 Il progetto è ancora nelle fasi iniziali di sviluppo. Attualmente sono implementate solo parzialmente la gestione della memoria e la CPU del GBC. Molte altre caratteristiche chiave devono ancora essere sviluppate e ottimizzate per raggiungere gli obiettivi desiderati.
